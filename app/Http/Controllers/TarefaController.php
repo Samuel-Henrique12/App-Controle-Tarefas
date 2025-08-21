@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use Mail;
+use App\Mail\NovaTarefaMail;
 use App\Models\Tarefa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -9,20 +11,14 @@ use Illuminate\Support\Facades\Auth;
 class TarefaController extends Controller
 {
     public function __construct() {
-        //$this->middleware('auth');
+        $this->middleware('auth');
     }
     public function index()
     {
-        if(Auth::check()) {
-            $id = Auth::user()->id;
-            $name = Auth::user()->name;
-            $email = Auth::user()->email;
-            return "ID $id | Nome: $name | Email: $email";
-        }
-        else {
-            return 'Deslogado';
+        $user_id = auth()->user()->id;
+        $tarefas = Tarefa::where('user_id', $user_id)->get();
+        return view('tarefa.index', ['tarefas' => $tarefas]);
             }
-        }
 
     /**
      * Show the form for creating a new resource.
@@ -37,7 +33,12 @@ class TarefaController extends Controller
      */
     public function store(Request $request)
     {
-        Tarefa::create($request->all());
+        $dados = $request->all();
+        $dados['user_id'] = auth()->user()->id;
+        $tarefa = Tarefa::create($dados);
+        $destinario = auth()->user()->email;
+        Mail::to($destinario)->send(new NovaTarefaMail($tarefa));
+        return redirect()->route('tarefa.show', ['tarefa' => $tarefa->id]);
     }
 
     /**
@@ -45,7 +46,7 @@ class TarefaController extends Controller
      */
     public function show(Tarefa $tarefa)
     {
-        //
+        return view('tarefa.show', ['tarefa' => $tarefa]);
     }
 
     /**
