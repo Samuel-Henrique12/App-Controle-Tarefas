@@ -16,7 +16,7 @@ class RedefinirSenhaNotification extends Notification
      */
     public function __construct($token)
     {
-        $this->$token = $token;
+        $this->token = $token;
     }
 
     /**
@@ -29,12 +29,9 @@ class RedefinirSenhaNotification extends Notification
         return ['mail'];
     }
 
-    /**
-     * Get the mail representation of the notification.
-     */
     public function toMail(object $notifiable): MailMessage
     {
-        $url = 'http://localhost:8000/reset/password/'.$this->token;
+        $url = 'http://localhost:8000/password/reset/'.$this->token;
         $minutos = config('auth.passwords.'.config('auth.defaults.passwords').'.expire');
         return (new MailMessage)
             ->subject(Lang::get('Atualização de senha'))
